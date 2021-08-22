@@ -28,7 +28,7 @@ MAX_COLS = 14
 ROWS = 11
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 
-level = 1
+level = 4
 swap_count = 0
 hook_count = 0
 game_over = 0
@@ -201,11 +201,11 @@ class Player():
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
             if key[pygame.K_LEFT]:
-                dx -= 2
+                dx -= 3
                 self.counter += 1
                 self.direction = -1
             if key[pygame.K_RIGHT]:
-                dx += 2
+                dx += 3
                 self.counter += 1
                 self.direction = 1
             if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
@@ -231,7 +231,7 @@ class Player():
     
     
             #add gravity
-            self.vel_y += 0.6
+            self.vel_y += 0.8
             if self.vel_y > 10:
                 self.vel_y = 10
             dy += self.vel_y
@@ -250,7 +250,7 @@ class Player():
                         #self.vel_y = 0
                         pass
                     #check if above the ground i.e. falling
-                    elif self.vel_y >= 0 and tile[1].top - self.rect.bottom > -35:
+                    elif self.vel_y >= 0 and tile[1].top - self.rect.bottom > -46:
                         dy = tile[1].top - self.rect.bottom
                         self.vel_y = 0
                         self.in_air = False
@@ -289,7 +289,7 @@ class Player():
         self.counter = 0
         for num in range(1, 3):
             img_right = pygame.image.load(f'img/characters/guy{num}.png')
-            img_right = pygame.transform.scale(img_right, ( TILE_SIZE-10 , TILE_SIZE - 30))
+            img_right = pygame.transform.scale(img_right, ( TILE_SIZE-15 , TILE_SIZE - 10))
             img_left = pygame.transform.flip(img_right, True, False)
             self.images_right.append(img_right)
             self.images_left.append(img_left)
