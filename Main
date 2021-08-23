@@ -391,7 +391,7 @@ while run:
             run = False    
         
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT and allow_hook == True and hook_count > 0:
+            if event.key == pygame.K_RIGHT and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_r + 1] == -1:
                 get_hooked_r = True
                 hook_count -= 1
             if event.key == pygame.K_LEFT and allow_hook == True and hook_count > 0:
@@ -443,6 +443,7 @@ while run:
                         break
                 get_hooked_r = False
                 world = World(world_data)
+                print (world_data[sprite_y][sprite_x_r])
             
             swap_button.draw(screen)            
         
