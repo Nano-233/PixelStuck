@@ -28,9 +28,9 @@ MAX_COLS = 14
 ROWS = 11
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 
-
-level = 0
-swap_count = 0
+swap_range = False
+level = 1
+swap_count = 5
 hook_count = 5
 game_over = 0
 current_tile = -1
@@ -39,9 +39,20 @@ facing = 1 #right
 player_movement = True
 main_menu = True
 allow_hook = False
+allow_swap = False
 get_hooked_r = False
 get_hooked_l = False
 get_hooked_u = False
+swap_1_x = []
+swap_1_y = []
+swap_1 = []
+swap_2 = []
+swap_2_x = []
+swap_2_y = []
+yet_1 = False
+yet_2 = False
+count = 0
+
 
 #colours
 GREEN = (144, 201, 120)
@@ -70,6 +81,10 @@ hook_rect = hook_img.get_rect()
 hook_rect.x = SCREEN_WIDTH + 70
 hook_rect.y = 550
 
+swap_rect = swap_img.get_rect()
+swap_rect.x = SCREEN_WIDTH + 200
+swap_rect.y = 540
+
 
 #draw grid
 def draw_grid():
@@ -91,7 +106,200 @@ def draw_grid():
         else: 
             pygame.draw.line(screen, WHITE, (0, c * TILE_SIZE), (SCREEN_WIDTH, c * TILE_SIZE)) 
             THICK_COUNT += 1
-        
+
+
+def player_square(x, y):
+    #mouse pos
+    if y < 4:
+        if x < 4:
+            mouse_square = 1
+        elif x < 7:
+            mouse_square = 2
+        elif x < 10:
+            mouse_square = 3
+        else:
+            mouse_square = 4
+    elif y < 7:
+        if x < 4:
+            mouse_square = 5
+        elif x < 7:
+            mouse_square = 6
+        elif x < 10:
+            mouse_square = 7
+        elif x < 14:
+            mouse_square = 8
+    elif y < 10:
+        if x < 4:
+            mouse_square = 9
+        elif x < 7:
+            mouse_square = 10
+        elif x < 10:
+            mouse_square = 11
+        elif x < 14:
+            mouse_square = 12 
+    
+    #sprite pos l
+    if sprite_y < 4:
+        if sprite_x_l < 4:
+            sprite_l_square = 1
+        elif sprite_x_l < 7:
+            sprite_l_square = 2
+        elif sprite_x_l < 10:
+            sprite_l_square = 3
+        else:
+            sprite_l_square = 4
+    elif sprite_y < 7:
+        if sprite_x_l < 4:
+            sprite_l_square = 5
+        elif sprite_x_l < 7:
+            sprite_l_square = 6
+        elif sprite_x_l < 10:
+            sprite_l_square = 7
+        elif sprite_x_l < 14:
+            sprite_l_square = 8
+    elif sprite_y < 10:
+        if sprite_x_l < 4:
+            sprite_l_square = 9
+        elif sprite_x_l < 7:
+            sprite_l_square = 10
+        elif sprite_x_l < 10:
+            sprite_l_square = 11
+        elif sprite_x_l < 14:
+            sprite_l_square = 12 
+    #sprite pos r
+    if sprite_y < 4:
+        if sprite_x_r < 4:
+            sprite_r_square = 1
+        elif sprite_x_r < 7:
+            sprite_r_square = 2
+        elif sprite_x_r < 10:
+            sprite_r_square = 3
+        else:
+            sprite_r_square = 4
+    elif sprite_y < 7:
+        if sprite_x_r < 4:
+            sprite_r_square = 5
+        elif sprite_x_r < 7:
+            sprite_r_square = 6
+        elif sprite_x_r < 10:
+            sprite_r_square = 7
+        elif sprite_x_r < 14:
+            sprite_r_square = 8
+    elif sprite_y < 10:
+        if sprite_x_r < 4:
+            sprite_r_square = 9
+        elif sprite_x_r < 7:
+            sprite_r_square = 10
+        elif sprite_x_r < 10:
+            sprite_r_square = 11
+        elif sprite_x_r < 14:
+            sprite_r_square = 12 
+    
+    
+    #check for flag
+    for flag_y, row in enumerate(world_data):
+        for flag_x, tile in enumerate(row):
+            if tile ==2:
+                if flag_y < 4:
+                    if flag_x < 4:
+                        flag_square = 1
+                    elif flag_x < 7:
+                        flag_square = 2
+                    elif flag_x < 10:
+                        flag_square = 3
+                    else:
+                        flag_square = 4
+                elif flag_y < 7:
+                    if flag_x < 4:
+                        flag_square = 5
+                    elif flag_x < 7:
+                        flag_square = 6
+                    elif flag_x < 10:
+                        flag_square = 7
+                    elif flag_x < 14:
+                        flag_square = 8
+                elif flag_y < 10:
+                    if flag_x < 4:
+                        flag_square = 9
+                    elif flag_x < 7:
+                        flag_square = 10
+                    elif flag_x < 10:
+                        flag_square = 11
+                    elif flag_x < 14:
+                        flag_square = 12   
+                
+    #check if override
+    if mouse_square == sprite_l_square or mouse_square == sprite_r_square or mouse_square == flag_square:
+        return False
+    else:
+        return True
+  
+
+
+def swap_collide(x, y):
+    if y < 4:
+        if x < 4:
+            mouse_square = 1
+        elif x < 7:
+            mouse_square = 2
+        elif x < 10:
+            mouse_square = 3
+        else:
+            mouse_square = 4
+    elif y < 7:
+        if x < 4:
+            mouse_square = 5
+        elif x < 7:
+            mouse_square = 6
+        elif x < 10:
+            mouse_square = 7
+        elif x < 14:
+            mouse_square = 8
+    elif y < 10:
+        if x < 4:
+            mouse_square = 9
+        elif x < 7:
+            mouse_square = 10
+        elif x < 10:
+            mouse_square = 11
+        elif x < 14:
+            mouse_square = 12 
+     
+     
+    #used square       
+    if used_y < 4:
+        if used_x < 4:
+            used_square = 1
+        elif used_x < 7:
+            used_square = 2
+        elif used_x < 10:
+            used_square = 3
+        else:
+            used_square = 4
+    elif used_y < 7:
+        if used_x < 4:
+            used_square = 5
+        elif used_x < 7:
+            used_square = 6
+        elif used_x < 10:
+            used_square = 7
+        elif used_x < 14:
+            used_square = 8
+    elif used_y < 10:
+        if used_x < 4:
+            used_square = 9
+        elif used_x < 7:
+            used_square = 10
+        elif used_x < 10:
+            used_square = 11
+        elif used_x < 14:
+            used_square = 12
+            
+    if mouse_square == used_square:
+        return False
+    else:
+        return True
+    
 #draw text
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -100,11 +308,13 @@ def draw_text(text, font, text_col, x, y):
         
         
 def reset_level(level):
+    global world_data
     player.reset(60, SCREEN_HEIGHT - 65)
     swamp_group.empty()
     flag_group.empty()
     swap_group.empty()
     hook_group.empty()
+    
     
 
     #load in level data and create world
@@ -324,6 +534,7 @@ class Player():
         self.vel_y = 0
         self.jumped = False
         self.direction = 0 
+        
 
 
 
@@ -405,6 +616,137 @@ while run:
                 get_hooked_l = True
             if event.key == pygame.K_UP and allow_hook == True and hook_count > 0 and world_data[sprite_y - 1][sprite_x_r] == -1 and world_data[sprite_y - 1][sprite_x_l] == -1:
                 get_hooked_u = True
+                
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and swap_range == True and allow_swap == True:
+            if yet_1 == False:
+                used_x = x
+                used_y = y
+                if y < 4:
+                    if x < 4:
+                        for i in range (1, 4):
+                            swap_1_y.append(i)
+                            swap_1_x.append(i)
+                    elif x < 7:
+                        for i in range (1, 4):
+                            swap_1_y.append(i)
+                        for i in range (4, 7):
+                            swap_1_x.append(i)
+                    elif x < 10:
+                        for i in range (1, 4):
+                            swap_1_y.append(i)
+                        for i in range (7, 10):
+                            swap_1_x.append(i)    
+                    else:
+                        for i in range (1, 4):
+                            swap_1_y.append(i)
+                        for i in range (10, 13):
+                            swap_1_x.append(i)
+                elif y < 7:
+                    if x < 4:
+                        for i in range (4, 7):
+                            swap_1_y.append(i)
+                        for i in range (1, 4):
+                            swap_1_x.append(i)
+                    elif x < 7:
+                        for i in range (4, 7):
+                            swap_1_y.append(i)
+                            swap_1_x.append(i)
+                    elif x < 10:
+                        for i in range (4, 7):
+                            swap_1_y.append(i)
+                        for i in range (7, 10):
+                            swap_1_x.append(i)
+                    elif x < 14:
+                        for i in range (4, 7):
+                            swap_1_y.append(i)
+                        for i in range (10, 13):
+                            swap_1_x.append(i)
+                elif y < 10:
+                    if x < 4:
+                        for i in range (7, 10):
+                            swap_1_y.append(i)
+                        for i in range (1, 4):
+                            swap_1_x.append(i)                    
+                    elif x < 7:
+                        for i in range (7, 10):
+                            swap_1_y.append(i)   
+                        for i in range (4, 7):
+                            swap_1_x.append(i)
+                    elif x < 10:
+                        for i in range (7, 10):
+                            swap_1_y.append(i)   
+                        for i in range (7,10):
+                            swap_1_x.append(i)
+                    elif x < 14:
+                        for i in range (7, 10):
+                            swap_1_y.append(i)   
+                        for i in range (10,13):
+                            swap_1_x.append(i)  
+            
+                yet_1 = True
+            elif yet_2 == False and swap_range == True and swap_collide(x, y) == True:
+                if y < 4:
+                    if x < 4:
+                        for i in range (1, 4):
+                            swap_2_y.append(i)
+                            swap_2_x.append(i)
+                    elif x < 7:
+                        for i in range (1, 4):
+                            swap_2_y.append(i)
+                        for i in range (4, 7):
+                            swap_2_x.append(i)
+                    elif x < 10:
+                        for i in range (1, 4):
+                            swap_2_y.append(i)
+                        for i in range (7, 10):
+                            swap_2_x.append(i) 
+                    else:
+                        for i in range (1, 4):
+                            swap_2_y.append(i)
+                        for i in range (10, 13):
+                            swap_2_x.append(i)                         
+                elif y < 7:
+                    if x < 4:
+                        for i in range (4, 7):
+                            swap_2_y.append(i)
+                        for i in range (10, 13):
+                            swap_2_x.append(i)
+                    elif x < 7:
+                        for i in range (4, 7):
+                            swap_2_y.append(i)
+                            swap_2_x.append(i)
+                    elif x < 10:
+                        for i in range (4, 7):
+                            swap_2_y.append(i)
+                        for i in range (7, 10):
+                            swap_2_x.append(i)
+                    elif x < 14:
+                        for i in range (4, 7):
+                            swap_2_y.append(i)
+                        for i in range (10, 13):
+                            swap_2_x.append(i)
+                elif y < 10:
+                    if x < 4:
+                        for i in range (7, 10):
+                            swap_2_y.append(i)
+                        for i in range (1, 4):
+                            swap_2_x.append(i)                         
+                    elif x < 7:
+                        for i in range (7, 10):
+                            swap_2_y.append(i)   
+                        for i in range (4, 7):
+                            swap_2_x.append(i)
+                    elif x < 10:
+                        for i in range (7, 10):
+                            swap_2_y.append(i)   
+                        for i in range (7,10):
+                            swap_2_x.append(i)
+                    elif x < 14:
+                        for i in range (7, 10):
+                            swap_2_y.append(i)   
+                        for i in range (10,13):
+                            swap_2_x.append(i)                         
+                yet_2 = True
             
     if main_menu == True:
         if exit_button.draw(screen):
@@ -436,13 +778,62 @@ while run:
                 hook_count += 1   
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 275)
             
+            if swap_button.draw(screen) and swap_count > 0:
+                allow_swap = not allow_swap
+                yet_1 = False
+                yet_2 = False 
+                swap_1_x = []
+                swap_1_y = []
+                swap_1 = []
+                swap_2 = []
+                swap_2_x = []
+                swap_2_y = []                 
+            
+            if allow_swap or allow_hook:
+                player_movement = False
+            else:
+                player_movement = True
+            if allow_swap:
+                pygame.draw.rect(screen, RED, swap_rect, 3) 
+            if allow_swap:
+                pos = pygame.mouse.get_pos()
+                x = (pos[0]) // TILE_SIZE
+                y = (pos[1]) // TILE_SIZE
+                #check in area
+                if pos[0] > TILE_SIZE and pos[0] < SCREEN_WIDTH - TILE_SIZE and pos[1] < SCREEN_HEIGHT - TILE_SIZE and pos[1] > TILE_SIZE and player_square(x, y) == True:
+                    swap_range = True
+                else:
+                    swap_range = False
+                        
+                if yet_1 == True and yet_2 == True: 
+                    for row in swap_1_y:
+                        for col in swap_1_x:
+                            swap_1.append(world_data[row][col])
+                    count = 0
+                    for row in swap_2_y:
+                        for col in swap_2_x:
+                            swap_2.append(world_data[row][col])
+                            world_data[row][col] = swap_1[count]
+                            count += 1
+                    count = 0
+                    for row in swap_1_y:
+                        for col in swap_1_x:
+                            world_data[row][col] = swap_2[count]
+                            count += 1                
+                    swap_count -= 1               
+                    allow_swap = False
+                    swamp_group.empty()
+                    hook_group.empty()
+                    swap_group.empty()                    
+                    world = World(world_data) 
             #if using hook
             if hook_button.draw(screen):               
-                player_movement = not player_movement
                 allow_hook = not allow_hook
                 
             if allow_hook:
                 pygame.draw.rect(screen, RED, hook_rect, 3)
+                            
+                
             if get_hooked_r == True:
                 for tile_check in range (sprite_x_r, 12):
                     if world_data[sprite_y][tile_check] != -1:
@@ -474,6 +865,7 @@ while run:
                         hook_count -= 1
                         break
                 get_hooked_u = False
+                
                 world = World(world_data)             
             
             swap_button.draw(screen)            
