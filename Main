@@ -65,6 +65,11 @@ restart_img = pygame.image.load('img/buttons/restart_btn.png')
 start_img = pygame.image.load('img/buttons/start_btn.png')
 exit_img = pygame.image.load('img/buttons/exit_btn.png')
 
+#load image rects
+hook_rect = hook_img.get_rect()
+hook_rect.x = SCREEN_WIDTH + 70
+hook_rect.y = 550
+
 
 #draw grid
 def draw_grid():
@@ -432,11 +437,12 @@ while run:
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 275)
             
             #if using hook
-            if hook_button.draw(screen):
+            if hook_button.draw(screen):               
                 player_movement = not player_movement
                 allow_hook = not allow_hook
                 
-            
+            if allow_hook:
+                pygame.draw.rect(screen, RED, hook_rect, 3)
             if get_hooked_r == True:
                 for tile_check in range (sprite_x_r, 12):
                     if world_data[sprite_y][tile_check] != -1:
@@ -461,7 +467,6 @@ while run:
             
             elif get_hooked_u == True:
                 for tile_check in range (sprite_y - 1, 0, -1):
-                    print(tile_check)
                     if world_data[tile_check][sprite_x_c] != -1:
                         hooked_tile = world_data[tile_check][sprite_x_c]
                         world_data[tile_check][sprite_x_c] = -1
