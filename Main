@@ -28,16 +28,19 @@ MAX_COLS = 14
 ROWS = 11
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 
-hook_check = False
+
 level = 0
 swap_count = 0
-hook_count = 0
+hook_count = 5
 game_over = 0
 current_tile = -1
 max_levels = 4
 facing = 1 #right
 player_movement = True
 main_menu = True
+allow_hook = False
+get_hooked_r = False
+get_hooked_l = False
 
 #colours
 GREEN = (144, 201, 120)
@@ -383,8 +386,17 @@ while run:
     screen.blit(background1_img, (0,0))
     
     for event in pygame.event.get():
+        
         if event.type == pygame.QUIT:
             run = False    
+        
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT and allow_hook == True and hook_count > 0:
+                get_hooked_r = True
+                hook_count -= 1
+            if event.key == pygame.K_LEFT and allow_hook == True and hook_count > 0:
+                get_hooked_l = True
+                hook_count -= 1
             
     if main_menu == True:
         if exit_button.draw(screen):
@@ -418,24 +430,20 @@ while run:
             
             #if using hook
             if hook_button.draw(screen):
-                hook_check = not hook_check
                 player_movement = not player_movement
-                hook_count -= 1
+                allow_hook = not allow_hook
                 
             
-            if hook_check:
-                key_hook = pygame.key.get_pressed()
-                if key_hook[pygame.K_RIGHT]:
-                    for tile_check in range (sprite_x_r, 12):
-                        if world_data[y][tile_check] != -1:
-                            hooked_tile = world_data[y][tile_check]
-                            world_data[y][tile_check] = -1
-                            world_data[y][tile_check - 1] = hooked_tile
-                            break
-                elif facing == -1:
-                    print('face left')                
-                
-                
+            if get_hooked_r == True:
+                for tile_check in range (sprite_x_r, 12):
+                    if world_data[sprite_y][tile_check] != -1:
+                        hooked_tile = world_data[sprite_y][tile_check]
+                        world_data[sprite_y][tile_check] = -1
+                        world_data[sprite_y][tile_check - 1] = hooked_tile
+                        break
+                get_hooked_r = False
+                world = World(world_data)
+            
             swap_button.draw(screen)            
         
         swamp_group.draw(screen) 
