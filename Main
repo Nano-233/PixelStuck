@@ -29,9 +29,11 @@ ROWS = 11
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 
 swap_range = False
-level = 1
-swap_count = 5
-hook_count = 5
+level = 0
+hook_list = [0, 3, 0]
+swap_list = [1, 0, 0]
+swap_count = 1
+hook_count = 0
 game_over = 0
 current_tile = -1
 max_levels = 4
@@ -879,8 +881,8 @@ while run:
         game_over = player.update(game_over)
         if game_over == -1:
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
-            hook_count = 0
-            swap_count = 0            
+            hook_count = hook_list[level]
+            swap_count = swap_list[level]            
             draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 400)
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 275)
             if restart_button.draw(screen):
@@ -892,8 +894,8 @@ while run:
         if game_over == 1:
         #reset game and go to next level
             level += 1
-            hook_count = 0
-            swap_count = 0            
+            hook_count = hook_list[level]
+            swap_count = swap_list[level]            
             if level <= max_levels:
                 #reset level
                 world_data = []
@@ -910,8 +912,8 @@ while run:
                     world_data = []
                     world = reset_level(level)
                     game_over = 0
-                    hook_count = 0
-                    swap_count = 0                    
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                   
             
             
     
