@@ -197,7 +197,7 @@ class Player():
         self.reset(x, y)
 
     def update(self, game_over):
-        global facing, sprite_x_r, sprite_y
+        global facing, sprite_x_r, sprite_x_l, sprite_y
         dx = 0
         dy = 0
         walk_cooldown = 5
@@ -391,12 +391,12 @@ while run:
             run = False    
         
         if event.type == pygame.KEYDOWN:
+            
             if event.key == pygame.K_RIGHT and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_r + 1] == -1:
                 get_hooked_r = True
-                hook_count -= 1
-            if event.key == pygame.K_LEFT and allow_hook == True and hook_count > 0:
+            if event.key == pygame.K_LEFT and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_l - 1] == -1:
                 get_hooked_l = True
-                hook_count -= 1
+                
             
     if main_menu == True:
         if exit_button.draw(screen):
@@ -440,10 +440,21 @@ while run:
                         hooked_tile = world_data[sprite_y][tile_check]
                         world_data[sprite_y][tile_check] = -1
                         world_data[sprite_y][tile_check - 1] = hooked_tile
+                        hook_count -= 1
                         break
                 get_hooked_r = False
                 world = World(world_data)
-                print (world_data[sprite_y][sprite_x_r])
+                
+            elif get_hooked_l == True:
+                for tile_check in range (sprite_x_l, 0, -1):
+                    if world_data[sprite_y][tile_check] != -1:
+                        hooked_tile = world_data[sprite_y][tile_check]
+                        world_data[sprite_y][tile_check] = -1
+                        world_data[sprite_y][tile_check + 1] = hooked_tile
+                        hook_count -= 1
+                        break
+                get_hooked_l = False
+                world = World(world_data)            
             
             swap_button.draw(screen)            
         
