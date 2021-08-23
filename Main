@@ -41,6 +41,7 @@ main_menu = True
 allow_hook = False
 get_hooked_r = False
 get_hooked_l = False
+get_hooked_u = False
 
 #colours
 GREEN = (144, 201, 120)
@@ -197,7 +198,7 @@ class Player():
         self.reset(x, y)
 
     def update(self, game_over):
-        global facing, sprite_x_r, sprite_x_l, sprite_y
+        global facing, sprite_x_r, sprite_x_l, sprite_y, sprite_x_c
         dx = 0
         dy = 0
         walk_cooldown = 5
@@ -286,6 +287,7 @@ class Player():
         #player coords to check collision of hook
         sprite_x_r = (self.rect.x + TILE_SIZE-16)  // TILE_SIZE
         sprite_x_l = self.rect.x  // TILE_SIZE
+        sprite_x_c = (((self.rect.x + TILE_SIZE-16) + self.rect.x) // 2) // TILE_SIZE
         sprite_y = self.rect.y // TILE_SIZE
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
@@ -396,7 +398,8 @@ while run:
                 get_hooked_r = True
             if event.key == pygame.K_LEFT and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_l - 1] == -1:
                 get_hooked_l = True
-                
+            if event.key == pygame.K_UP and allow_hook == True and hook_count > 0 and world_data[sprite_y - 1][sprite_x_r] == -1 and world_data[sprite_y - 1][sprite_x_l] == -1:
+                get_hooked_u = True
             
     if main_menu == True:
         if exit_button.draw(screen):
@@ -454,7 +457,19 @@ while run:
                         hook_count -= 1
                         break
                 get_hooked_l = False
-                world = World(world_data)            
+                world = World(world_data)  
+            
+            elif get_hooked_u == True:
+                for tile_check in range (sprite_y - 1, 0, -1):
+                    print(tile_check)
+                    if world_data[tile_check][sprite_x_c] != -1:
+                        hooked_tile = world_data[tile_check][sprite_x_c]
+                        world_data[tile_check][sprite_x_c] = -1
+                        world_data[tile_check + 1][sprite_x_c] = hooked_tile
+                        hook_count -= 1
+                        break
+                get_hooked_u = False
+                world = World(world_data)             
             
             swap_button.draw(screen)            
         
