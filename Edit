@@ -557,8 +557,9 @@ while run:
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 275)
             
             if swap_button.draw(screen):
-                player_movement = not player_movement
                 allow_swap = not allow_swap
+                if allow_swap == False:
+                    player_movement = True
                 yet_1 = False
                 yet_2 = False 
                 swap_1_x = []
@@ -567,7 +568,8 @@ while run:
                 swap_2 = []
                 swap_2_x = []
                 swap_2_y = []                 
-                
+            if allow_swap:
+                player_movement = False  
             if allow_swap:
                 pos = pygame.mouse.get_pos()
                 x = (pos[0]) // TILE_SIZE
@@ -595,7 +597,11 @@ while run:
                             count += 1                
                     swap_count -= 1               
                     allow_swap = False
+                    swamp_group.empty()
+                    hook_group.empty()
+                    swap_group.empty()                    
                     world = World(world_data) 
+                    player_movement = True
             #if using hook
             if hook_button.draw(screen):               
                 player_movement = not player_movement
@@ -636,6 +642,7 @@ while run:
                         hook_count -= 1
                         break
                 get_hooked_u = False
+                
                 world = World(world_data)             
             
             swap_button.draw(screen)            
