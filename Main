@@ -28,11 +28,15 @@ MAX_COLS = 14
 ROWS = 11
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 
-level = 4
+hook_check = False
+level = 0
 swap_count = 0
 hook_count = 0
 game_over = 0
+current_tile = -1
 max_levels = 4
+facing = 1 #right
+player_movement = True
 main_menu = True
 
 #colours
@@ -102,6 +106,8 @@ def reset_level(level):
 
     return world
 
+
+   
 class World():
     def __init__(self, data):
         self.tile_list = []
@@ -188,6 +194,7 @@ class Player():
         self.reset(x, y)
 
     def update(self, game_over):
+        global facing, sprite_x_r, sprite_y
         dx = 0
         dy = 0
         walk_cooldown = 5
@@ -195,19 +202,21 @@ class Player():
         #get keypresses
         if game_over == 0:
             key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False: 
+            if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False and player_movement == True: 
                 self.vel_y = -10
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
-            if key[pygame.K_LEFT]:
+            if key[pygame.K_LEFT] and player_movement == True:
                 dx -= 3
                 self.counter += 1
                 self.direction = -1
-            if key[pygame.K_RIGHT]:
+                facing = -1
+            if key[pygame.K_RIGHT] and player_movement == True:
                 dx += 3
                 self.counter += 1
                 self.direction = 1
+                facing = 1
             if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
                 self.counter = 0
                 self.index = 0
@@ -271,7 +280,10 @@ class Player():
         #update player coordinates
         self.rect.x += dx
         self.rect.y += dy
-
+        #player coords to check collision of hook
+        sprite_x_r = (self.rect.x + TILE_SIZE-16)  // TILE_SIZE
+        sprite_x_l = self.rect.x  // TILE_SIZE
+        sprite_y = self.rect.y // TILE_SIZE
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             dy = 0
@@ -360,6 +372,8 @@ world = World(world_data)
 restart_button = button.Button(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 100, restart_img, 1)
 start_button = button.Button(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT //2 - 200, start_img, 2)
 exit_button = button.Button(SCREEN_WIDTH // 2 + 35, SCREEN_HEIGHT //2, exit_img, 2)
+hook_button = button.Button(SCREEN_WIDTH + 70, 550, hook_img, 1)
+swap_button = button.Button(SCREEN_WIDTH + 200, 540, swap_img, 1)
 
 
 run = True
@@ -368,6 +382,10 @@ while run:
     clock.tick(FPS)
     screen.blit(background1_img, (0,0))
     
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False    
+            
     if main_menu == True:
         if exit_button.draw(screen):
             run = False
@@ -387,17 +405,38 @@ while run:
         
         
         
-        
         if game_over == 0:
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
             #update score
-            #check if a coin has been collected
+            #check if a hook has been collected
             if pygame.sprite.spritecollide(player, swap_group, True):
                 swap_count += 1
             draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 400)  
             if pygame.sprite.spritecollide(player, hook_group, True):
                 hook_count += 1   
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 275)
+            
+            #if using hook
+            if hook_button.draw(screen):
+                hook_check = not hook_check
+                player_movement = not player_movement
+                hook_count -= 1
+                
+            
+            if hook_check:
+                key_hook = pygame.key.get_pressed()
+                if key_hook[pygame.K_RIGHT]:
+                    for tile_check in range (sprite_x_r, 12):
+                        if world_data[y][tile_check] != -1:
+                            hooked_tile = world_data[y][tile_check]
+                            world_data[y][tile_check] = -1
+                            world_data[y][tile_check - 1] = hooked_tile
+                            break
+                elif facing == -1:
+                    print('face left')                
+                
+                
+            swap_button.draw(screen)            
         
         swamp_group.draw(screen) 
         flag_group.draw(screen)
@@ -406,7 +445,6 @@ while run:
         
         
         game_over = player.update(game_over)
-        
         if game_over == -1:
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
             hook_count = 0
@@ -444,9 +482,7 @@ while run:
                     swap_count = 0                    
             
             
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
+    
 
     pygame.display.update()
 
