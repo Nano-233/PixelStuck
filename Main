@@ -21,6 +21,8 @@ swap_img = pygame.image.load('img/tile/4.png').convert_alpha()
 swap_img = pygame.transform.scale(swap_img, (60, 60)) 
 hook_img = pygame.image.load('img/tile/3.png').convert_alpha()
 hook_img = pygame.transform.scale(hook_img, (60, 60)) 
+tut_img = pygame.image.load('img/ui/tutorial.png')
+back_img = pygame.image.load('img/ui/back.png')
 pygame.display.set_icon(icon_img)
 
 
@@ -28,12 +30,13 @@ MAX_COLS = 14
 ROWS = 11
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 
+tutorial = False
 swap_range = False
-level = 2
-hook_list = [0, 3, 6]
+level = 0
+hook_list = [0, 3, 4]
 swap_list = [1, 0, 1]
 swap_count = 1
-hook_count = 2
+hook_count = 0
 game_over = 0
 current_tile = -1
 max_levels = 2
@@ -77,6 +80,7 @@ level_border_img = pygame.transform.scale(level_border_img, (250, 75))
 restart_img = pygame.image.load('img/buttons/restart_btn.png')
 start_img = pygame.image.load('img/buttons/start_btn.png')
 exit_img = pygame.image.load('img/buttons/exit_btn.png')
+tutorial_img = pygame.image.load('img/ui/tutorial_text.png')
 
 #load image rects
 hook_rect = hook_img.get_rect()
@@ -594,10 +598,12 @@ world = World(world_data)
 #buttons
 restart_button = button.Button(SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2 + 100, restart_img, 1)
 restart_button_active = button.Button(SCREEN_WIDTH + 88, 100, restart_img, 1)
-start_button = button.Button(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT //2 - 200, start_img, 2)
-exit_button = button.Button(SCREEN_WIDTH // 2 + 35, SCREEN_HEIGHT //2, exit_img, 2)
+tutorial_button = button.Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT //2 - 50, tutorial_img, 1)
+start_button = button.Button(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT //2 - 250, start_img, 2)
+exit_button = button.Button(SCREEN_WIDTH // 2 + 35, SCREEN_HEIGHT //2 + 100, exit_img, 2)
 hook_button = button.Button(SCREEN_WIDTH + 70, 550, hook_img, 1)
 swap_button = button.Button(SCREEN_WIDTH + 200, 540, swap_img, 1)
+back_button = button.Button(20, 540, back_img, 1)
 
 
 run = True
@@ -756,6 +762,14 @@ while run:
             run = False
         if start_button.draw(screen):
             main_menu = False
+        if tutorial_button.draw(screen):
+            main_menu = False
+            tutorial = True
+    elif tutorial == True:
+        screen.blit(tut_img, (0, 0))
+        if back_button.draw(screen):
+            main_menu = True
+            tutorial = False
     else:        
         draw_grid()
         world.draw()
