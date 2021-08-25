@@ -36,7 +36,7 @@ level = 0
 hook_list = [0, 3, 4]
 swap_list = [1, 0, 1]
 swap_count = 1
-hook_count = 0
+hook_count = 5
 game_over = 0
 current_tile = -1
 max_levels = 2
@@ -797,10 +797,20 @@ while run:
                 draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)                
             #update score
             #check if a hook has been collected
-            if pygame.sprite.spritecollide(player, swap_group, True):
-                swap_count += 1
-            draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)  
-            if pygame.sprite.spritecollide(player, hook_group, True):
+            collide_swap = pygame.sprite.spritecollide(player, swap_group, True)
+            if collide_swap:
+                for swap in collide_swap:
+                    swap_colx = swap.rect.x
+                    swap_coly = swap.rect.y
+                    world_data[swap_coly // TILE_SIZE][swap_colx // TILE_SIZE] = -1                
+                swap_count += 1         
+            draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390) 
+            collide_hook = pygame.sprite.spritecollide(player, hook_group, True)
+            if collide_hook:          
+                for hook in collide_hook:
+                    hook_colx = hook.rect.x
+                    hook_coly = hook.rect.y
+                    world_data[hook_coly // TILE_SIZE][hook_colx // TILE_SIZE] = -1
                 hook_count += 1   
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)
             
@@ -862,7 +872,9 @@ while run:
                 
             if get_hooked_r == True:
                 for tile_check in range (sprite_x_r, 12):
-                    if world_data[sprite_y][tile_check] != -1:
+                    if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
+                        if world_data[sprite_y][tile_check -1] == 4 or world_data[sprite_y][tile_check -1] == 3:
+                            break
                         hooked_tile = world_data[sprite_y][tile_check]
                         world_data[sprite_y][tile_check] = -1
                         world_data[sprite_y][tile_check - 1] = hooked_tile
@@ -876,7 +888,7 @@ while run:
                 
             elif get_hooked_l == True:
                 for tile_check in range (sprite_x_l, 0, -1):
-                    if world_data[sprite_y][tile_check] != -1:
+                    if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
                         hooked_tile = world_data[sprite_y][tile_check]
                         world_data[sprite_y][tile_check] = -1
                         world_data[sprite_y][tile_check + 1] = hooked_tile
@@ -887,7 +899,7 @@ while run:
             
             elif get_hooked_u == True:
                 for tile_check in range (sprite_y - 1, 0, -1):
-                    if world_data[tile_check][sprite_x_c] != -1:
+                    if world_data[tile_check][sprite_x_c] != -1 and world_data[tile_check][sprite_x_c] != 3 and world_data[tile_check][sprite_x_c] != 4:
                         hooked_tile = world_data[tile_check][sprite_x_c]
                         world_data[tile_check][sprite_x_c] = -1
                         world_data[tile_check + 1][sprite_x_c] = hooked_tile
