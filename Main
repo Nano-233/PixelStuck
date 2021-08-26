@@ -36,7 +36,7 @@ level = 0
 hook_list = [0, 3, 4]
 swap_list = [1, 0, 1]
 swap_count = 1
-hook_count = 5
+hook_count = 0
 game_over = 0
 current_tile = -1
 max_levels = 2
@@ -873,7 +873,7 @@ while run:
             if get_hooked_r == True:
                 for tile_check in range (sprite_x_r, 12):
                     if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
-                        if world_data[sprite_y][tile_check -1] == 4 or world_data[sprite_y][tile_check -1] == 3:
+                        if world_data[sprite_y][tile_check - 1] == 4 or world_data[sprite_y][tile_check - 1] == 3:
                             break
                         hooked_tile = world_data[sprite_y][tile_check]
                         world_data[sprite_y][tile_check] = -1
@@ -889,6 +889,8 @@ while run:
             elif get_hooked_l == True:
                 for tile_check in range (sprite_x_l, 0, -1):
                     if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
+                        if world_data[sprite_y][tile_check + 1] == 4 or world_data[sprite_y][tile_check + 1] == 3:
+                            break                        
                         hooked_tile = world_data[sprite_y][tile_check]
                         world_data[sprite_y][tile_check] = -1
                         world_data[sprite_y][tile_check + 1] = hooked_tile
@@ -900,6 +902,8 @@ while run:
             elif get_hooked_u == True:
                 for tile_check in range (sprite_y - 1, 0, -1):
                     if world_data[tile_check][sprite_x_c] != -1 and world_data[tile_check][sprite_x_c] != 3 and world_data[tile_check][sprite_x_c] != 4:
+                        if world_data[tile_check + 1][sprite_x_c] == 4 or world_data[tile_check + 1][sprite_x_c] == 3:
+                            break                           
                         hooked_tile = world_data[tile_check][sprite_x_c]
                         world_data[tile_check][sprite_x_c] = -1
                         world_data[tile_check + 1][sprite_x_c] = hooked_tile
