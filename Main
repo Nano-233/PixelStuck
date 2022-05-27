@@ -13,7 +13,7 @@ clock = pygame.time.Clock()
 FPS = 60
 #timer
 start_time = 0
-
+pause_start_time = 0
 
 SCREEN_WIDTH = 840
 SCREEN_HEIGHT = 660
@@ -38,7 +38,7 @@ TILE_SIZE = SCREEN_HEIGHT // ROWS
 
 tutorial = False
 swap_range = False
-level = 0
+level = 4
 hook_list = [0, 3, 2, 2, 3]
 swap_list = [1, 0, 1, 2, 1]
 swap_count = 1
@@ -435,22 +435,27 @@ class Player():
         #get keypresses
         if game_over == 0:
             key = pygame.key.get_pressed()
-            if key[pygame.K_SPACE] and self.jumped == False and self.in_air == False and player_movement == True: 
+            if key[pygame.K_SPACE]and self.jumped == False and self.in_air == False and player_movement == True: 
+                self.vel_y = -10
+                self.jumped = True
+            if key[pygame.K_UP]and self.jumped == False and self.in_air == False and player_movement == True: 
                 self.vel_y = -10
                 self.jumped = True
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
-            if key[pygame.K_LEFT] and player_movement == True:
+            if key[pygame.K_UP] == False:
+                self.jumped = False
+            if key[pygame.K_LEFT] and player_movement == True or key[pygame.K_a]and player_movement == True:
                 dx -= 3
                 self.counter += 1
                 self.direction = -1
                 facing = -1
-            if key[pygame.K_RIGHT] and player_movement == True:
+            if key[pygame.K_RIGHT] and player_movement == True or key[pygame.K_d]and player_movement == True:
                 dx += 3
                 self.counter += 1
                 self.direction = 1
                 facing = 1
-            if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False:
+            if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False and key[pygame.K_d] == False and key[pygame.K_a] == False:
                 self.counter = 0
                 self.index = 0
                 if self.direction == 1:
@@ -787,12 +792,12 @@ while run:
         if back_button.draw(screen):
             main_menu = True
             tutorial = False
-    else:        
+    else:   
+        pause_end_time = pygame.time.get_ticks()
         draw_grid()
         world.draw()
         #UI
         screen.blit(level_border_img, (SCREEN_WIDTH + 30 , 10))
-        
         draw_text('Gadgets', font_sub, WHITE, SCREEN_WIDTH + 90, 150)
         screen.blit(border_img, (SCREEN_WIDTH + 30 , 200))
         screen.blit(hook_img, (SCREEN_WIDTH + 80,260))
@@ -804,7 +809,11 @@ while run:
         if game_over == 0:
             #if timer not yet started, start clock
             if start_time == 0:
-                start_time = pygame.time.get_ticks() 
+                start_time = pygame.time.get_ticks()
+            #if a pause happened, minus paused time from total time
+            if pause_end_time > pause_start_time and pause_start_time > 0:
+                start_time += (pause_end_time - pause_start_time)
+                pause_start_time = 0
             counting_time = pygame.time.get_ticks() - start_time
             # change milliseconds into seconds
             counting_seconds = str( (counting_time%60000)/1000 ).zfill(2)
@@ -812,8 +821,12 @@ while run:
             
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
             if exit_button_active.draw(screen):
+                pause_start_time = pygame.time.get_ticks()
                 main_menu = True
-                start_time = 0
+                world_data = []
+                world = reset_level(level)  
+                hook_count = hook_list[level]
+                swap_count = swap_list[level]                    
             if restart_button_active.draw(screen):
                 world_data = []
                 world = reset_level(level)
@@ -976,9 +989,11 @@ while run:
                 draw_text('YOU WIN!', font_level, RED, (SCREEN_WIDTH // 2) - 100, SCREEN_HEIGHT // 2)
                 draw_text(f'Level: {max_levels}', font_level, RED, SCREEN_WIDTH + 60, 25)
                 draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
-                draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)                
+                draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)  
+                draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600) 
                 if restart_button.draw(screen):
                     level = 0
+                    start_time = 0
                     #reset level
                     world_data = []
                     world = reset_level(level)
