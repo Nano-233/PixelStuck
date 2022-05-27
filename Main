@@ -3,10 +3,10 @@ import button
 from os import path
 from pygame.locals import *
 import pickle
+#changelog: added wasd controls
 #add more levels
 #sound
-#better win
-#timer
+#better win (maybe sandbox level walk into UI?)
 pygame.init()
 
 clock = pygame.time.Clock()
@@ -29,6 +29,8 @@ hook_img = pygame.image.load('img/tile/3.png').convert_alpha()
 hook_img = pygame.transform.scale(hook_img, (60, 60)) 
 tut_img = pygame.image.load('img/ui/tutorial.png')
 back_img = pygame.image.load('img/ui/back.png')
+broke_img = pygame.image.load('img/ui/Broken.png').convert_alpha()
+broke_img = pygame.transform.scale(broke_img, (57, 57)) 
 pygame.display.set_icon(icon_img)
 
 
@@ -60,6 +62,7 @@ swap_1 = []
 swap_2 = []
 swap_2_x = []
 swap_2_y = []
+won_tile = []
 yet_1 = False
 yet_2 = False
 count = 0
@@ -79,6 +82,7 @@ font_score = pygame.font.SysFont('bahnschrift', 40)
 
 #load images
 background1_img = pygame.image.load('img/background/1.png')
+win_back_img = pygame.image.load('img/background/win.png')
 border_img = pygame.image.load('img/background/border.png').convert_alpha()
 border_img = pygame.transform.scale(border_img, (250, 300)) 
 level_border_img = pygame.image.load('img/background/level_border.png').convert_alpha()
@@ -94,6 +98,11 @@ tutorial_img = pygame.image.load('img/ui/tutorial_text.png')
 hook_rect = hook_img.get_rect()
 hook_rect.x = SCREEN_WIDTH + 70
 hook_rect.y = 500
+
+broke_rect = broke_img.get_rect()
+broke_rect.x = 370
+broke_rect.y = 115
+won_tile.append(broke_rect)
 
 swap_rect = swap_img.get_rect()
 swap_rect.x = SCREEN_WIDTH + 200
@@ -524,6 +533,72 @@ class Player():
             self.image = self.dead_image
             if self.rect.y > 200:
                 self.rect.y -= 5
+                
+        elif game_over == 1:
+            key = pygame.key.get_pressed()
+            if key[pygame.K_SPACE]: 
+                self.vel_y = -10
+            if key[pygame.K_UP]: 
+                self.vel_y = -10
+            if key[pygame.K_LEFT] and player_movement == True or key[pygame.K_a]:
+                dx -= 3
+                self.counter += 1
+                self.direction = -1
+                facing = -1
+            if key[pygame.K_RIGHT] and player_movement == True or key[pygame.K_d]:
+                dx += 3
+                self.counter += 1
+                self.direction = 1
+                facing = 1
+            if key[pygame.K_LEFT] == False and key[pygame.K_RIGHT] == False and key[pygame.K_d] == False and key[pygame.K_a] == False:
+                self.counter = 0
+                self.index = 0
+                if self.direction == 1:
+                    self.image = self.images_right[self.index]
+                if self.direction == -1:
+                    self.image = self.images_left[self.index]
+                    
+            
+            
+            #change for collision win
+            for tile in won_tile:
+                #check for collision in x direction
+                if tile.colliderect(self.rect.x + dx, self.rect.y, self.width, self.height) and not tile.colliderect(self.rect.x, self.rect.y + dy, self.width, self.height):
+                    dx = 0
+                #check for collision in y direction
+                if tile.colliderect(self.rect.x, self.rect.y + dy, self.width, self.height) :
+                    #below
+                    if self.vel_y < 0:
+                        dy = tile.bottom - self.rect.top
+                        self.vel_y = 0
+                        pass                    
+                    #check if above the ground i.e. falling
+                    if self.vel_y >= 0 and tile.top - self.rect.bottom > -46:
+                        dy = tile.top - self.rect.bottom
+                        self.vel_y = 0
+                        self.in_air = False            
+        
+        
+        
+            #handle animation
+            if self.counter > walk_cooldown:
+                self.counter = 0	
+                self.index += 1
+                if self.index >= len(self.images_right):
+                    self.index = 0
+                if self.direction == 1:
+                    self.image = self.images_right[self.index]
+                if self.direction == -1:
+                    self.image = self.images_left[self.index]
+        
+        
+            #add gravity
+            self.vel_y += 0.8
+            if self.vel_y > 10:
+                self.vel_y = 10
+            dy += self.vel_y            
+            
+            
         #update player coordinates
         self.rect.x += dx
         self.rect.y += dy
@@ -641,11 +716,11 @@ while run:
         
         if event.type == pygame.KEYDOWN:
             
-            if event.key == pygame.K_RIGHT and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_r + 1] == -1:
+            if (event.key == pygame.K_RIGHT or event.key == pygame.K_d) and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_r + 1] == -1:
                 get_hooked_r = True
-            if event.key == pygame.K_LEFT and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_l - 1] == -1:
+            if (event.key == pygame.K_LEFT or event.key == pygame.K_a) and allow_hook == True and hook_count > 0 and world_data[sprite_y][sprite_x_l - 1] == -1:
                 get_hooked_l = True
-            if event.key == pygame.K_UP and allow_hook == True and hook_count > 0 and world_data[sprite_y - 1][sprite_x_r] == -1 and world_data[sprite_y - 1][sprite_x_l] == -1:
+            if (event.key == pygame.K_UP or event.key == pygame.K_w)and allow_hook == True and hook_count > 0 and world_data[sprite_y - 1][sprite_x_r] == -1 and world_data[sprite_y - 1][sprite_x_l] == -1:
                 get_hooked_u = True
                 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and swap_range == True and allow_swap == True:
@@ -986,20 +1061,24 @@ while run:
                 hook_count = hook_list[level]
                 swap_count = swap_list[level]                 
             else:
-                draw_text('YOU WIN!', font_level, RED, (SCREEN_WIDTH // 2) - 100, SCREEN_HEIGHT // 2)
-                draw_text(f'Level: {max_levels}', font_level, RED, SCREEN_WIDTH + 60, 25)
-                draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
-                draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)  
-                draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600) 
-                if restart_button.draw(screen):
-                    level = 0
-                    start_time = 0
-                    #reset level
-                    world_data = []
-                    world = reset_level(level)
-                    game_over = 0
-                    hook_count = hook_list[level]
-                    swap_count = swap_list[level]                   
+                #draws you win background and keeps player updating
+                screen.blit(win_back_img, (0, 0))
+                game_over = player.update(game_over)
+                screen.blit(broke_img, (370,115))
+                #draw_text('YOU WIN!', font_level, RED, (SCREEN_WIDTH // 2) - 100, SCREEN_HEIGHT // 2)
+                #draw_text(f'Level: {max_levels}', font_level, RED, SCREEN_WIDTH + 60, 25)
+                #draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
+                #draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)  
+                #draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600) 
+                #if restart_button.draw(screen):
+                    #level = 0
+                    #start_time = 0
+                     #reset level
+                    #world_data = []
+                    #world = reset_level(level)
+                    #game_over = 0
+                    #hook_count = hook_list[level]
+                    #swap_count = swap_list[level]                   
             
             
     
