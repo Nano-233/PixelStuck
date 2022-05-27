@@ -20,6 +20,7 @@ SCREEN_HEIGHT = 660
 
 SIDE_MARGIN = 300
 
+
 screen = pygame.display.set_mode((SCREEN_WIDTH + SIDE_MARGIN, SCREEN_HEIGHT))
 pygame.display.set_caption('Pixel Stuck')
 icon_img = pygame.image.load('img/tile/9.png')
@@ -31,6 +32,7 @@ tut_img = pygame.image.load('img/ui/tutorial.png')
 back_img = pygame.image.load('img/ui/back.png')
 broke_img = pygame.image.load('img/ui/Broken.png').convert_alpha()
 broke_img = pygame.transform.scale(broke_img, (57, 57)) 
+key_img = pygame.image.load('img/ui/key.jpg')
 pygame.display.set_icon(icon_img)
 
 
@@ -93,20 +95,63 @@ exit_img = pygame.image.load('img/buttons/exit_btn.png')
 exit_active_img = pygame.image.load('img/buttons/exit_btn.png').convert_alpha()
 exit_active_img = pygame.transform.scale(exit_active_img, (120, 42)) 
 tutorial_img = pygame.image.load('img/ui/tutorial_text.png')
+trophy_img = pygame.image.load('img/ui/trophy.png').convert_alpha()
+trophy_img = pygame.transform.scale(trophy_img, (60, 60))
 
 #load image rects
 hook_rect = hook_img.get_rect()
 hook_rect.x = SCREEN_WIDTH + 70
 hook_rect.y = 500
 
+swap_rect = swap_img.get_rect()
+swap_rect.x = SCREEN_WIDTH + 200
+swap_rect.y = 500
+
 broke_rect = broke_img.get_rect()
 broke_rect.x = 370
 broke_rect.y = 115
 won_tile.append(broke_rect)
 
-swap_rect = swap_img.get_rect()
-swap_rect.x = SCREEN_WIDTH + 200
-swap_rect.y = 500
+
+#scale rect size for exit and restart img
+exit_rect = exit_img.get_rect()
+exit_rect = exit_rect.inflate(exit_rect.w, exit_rect.h)
+exit_rect.x = SCREEN_WIDTH + 300 - exit_rect.w
+exit_rect.y = SCREEN_HEIGHT - exit_rect.h
+won_tile.append(exit_rect)
+
+trophy_rect = trophy_img.get_rect()
+trophy_rect.x, trophy_rect.y = 700, 150
+trophy_rect_2 = trophy_rect.copy()
+trophy_rect_2.x, trophy_rect_2.y = 790, 500
+trophy_rect_3 = trophy_rect.copy()
+trophy_rect_3.x, trophy_rect_3.y = 300, 340
+trophy_rect_4 = trophy_rect.copy()
+trophy_rect_4.x, trophy_rect_4.y = 330, 222
+trophy_rect_5 = trophy_rect.copy()
+trophy_rect_5.x, trophy_rect_5.y = 550, 600
+trophy_rect_6 = trophy_rect.copy()
+trophy_rect_6.x, trophy_rect_6.y = 1000, 40
+trophy_rect_7 = trophy_rect.copy()
+trophy_rect_7.x, trophy_rect_7.y = 1100, 100
+
+won_tile.append(trophy_rect)
+won_tile.append(trophy_rect_2)
+won_tile.append(trophy_rect_3)
+won_tile.append(trophy_rect_4)
+won_tile.append(trophy_rect_5)
+won_tile.append(trophy_rect_6)
+won_tile.append(trophy_rect_7)
+    
+restart_rect = restart_img.get_rect()
+restart_rect = restart_rect.inflate(restart_rect.w, restart_rect.h)
+restart_rect.x = SCREEN_WIDTH + 300 - restart_rect.w
+restart_rect.y = SCREEN_HEIGHT - restart_rect.h - exit_rect.h
+won_tile.append(restart_rect)
+
+
+
+
 
 
 #draw grid
@@ -702,6 +747,8 @@ hook_button = button.Button(SCREEN_WIDTH + 70, 510, hook_img, 1)
 swap_button = button.Button(SCREEN_WIDTH + 200, 500, swap_img, 1)
 back_button = button.Button(20, 540, back_img, 1)
 exit_button_active = button.Button(SCREEN_WIDTH + 170, 100, exit_active_img, 1)
+exit_button_end = button.Button(SCREEN_WIDTH + 300 - exit_rect.w, SCREEN_HEIGHT - exit_rect.h, exit_img, 2)
+restart_button_end = button.Button(SCREEN_WIDTH + 300 - restart_rect.w, SCREEN_HEIGHT - restart_rect.h - exit_rect.h, restart_img, 2)
 
 run = True
 while run:
@@ -1063,22 +1110,35 @@ while run:
             else:
                 #draws you win background and keeps player updating
                 screen.blit(win_back_img, (0, 0))
+                screen.blit(trophy_img, (700, 150))
+                screen.blit(trophy_img, (790, 500))
+                screen.blit(trophy_img, (300, 340))
+                screen.blit(trophy_img, (330, 222))
+                screen.blit(trophy_img, (550, 600))
+                screen.blit(trophy_img, (1000, 40))
+                screen.blit(trophy_img, (50, 100))  
+                screen.blit(key_img, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 100))
                 game_over = player.update(game_over)
                 screen.blit(broke_img, (370,115))
-                #draw_text('YOU WIN!', font_level, RED, (SCREEN_WIDTH // 2) - 100, SCREEN_HEIGHT // 2)
-                #draw_text(f'Level: {max_levels}', font_level, RED, SCREEN_WIDTH + 60, 25)
-                #draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
-                #draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)  
+                if exit_button_end.draw(screen):
+                    level = 0
+                    start_time = 0
+                    world_data = []
+                    world = reset_level(level)
+                    game_over = 0
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                       
+                    main_menu = True   
+                if restart_button_end.draw(screen):
+                    level = 0
+                    start_time = 0
+                    world_data = []
+                    world = reset_level(level)
+                    game_over = 0
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                   
+
                 #draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600) 
-                #if restart_button.draw(screen):
-                    #level = 0
-                    #start_time = 0
-                     #reset level
-                    #world_data = []
-                    #world = reset_level(level)
-                    #game_over = 0
-                    #hook_count = hook_list[level]
-                    #swap_count = swap_list[level]                   
             
             
     
