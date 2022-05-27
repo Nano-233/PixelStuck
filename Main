@@ -4,13 +4,16 @@ from os import path
 from pygame.locals import *
 import pickle
 #add more levels
-#back to menu
 #sound
 #better win
+#timer
 pygame.init()
 
 clock = pygame.time.Clock()
 FPS = 60
+#timer
+start_time = 0
+
 
 SCREEN_WIDTH = 840
 SCREEN_HEIGHT = 660
@@ -90,11 +93,11 @@ tutorial_img = pygame.image.load('img/ui/tutorial_text.png')
 #load image rects
 hook_rect = hook_img.get_rect()
 hook_rect.x = SCREEN_WIDTH + 70
-hook_rect.y = 550
+hook_rect.y = 500
 
 swap_rect = swap_img.get_rect()
 swap_rect.x = SCREEN_WIDTH + 200
-swap_rect.y = 540
+swap_rect.y = 500
 
 
 #draw grid
@@ -615,8 +618,8 @@ restart_button_active = button.Button(SCREEN_WIDTH + 20, 100, restart_img, 1)
 tutorial_button = button.Button(SCREEN_WIDTH // 2, SCREEN_HEIGHT //2 - 50, tutorial_img, 1)
 start_button = button.Button(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT //2 - 250, start_img, 2)
 exit_button = button.Button(SCREEN_WIDTH // 2 + 35, SCREEN_HEIGHT //2 + 100, exit_img, 2)
-hook_button = button.Button(SCREEN_WIDTH + 70, 550, hook_img, 1)
-swap_button = button.Button(SCREEN_WIDTH + 200, 540, swap_img, 1)
+hook_button = button.Button(SCREEN_WIDTH + 70, 510, hook_img, 1)
+swap_button = button.Button(SCREEN_WIDTH + 200, 500, swap_img, 1)
 back_button = button.Button(20, 540, back_img, 1)
 exit_button_active = button.Button(SCREEN_WIDTH + 170, 100, exit_active_img, 1)
 
@@ -799,9 +802,18 @@ while run:
         
         
         if game_over == 0:
+            #if timer not yet started, start clock
+            if start_time == 0:
+                start_time = pygame.time.get_ticks() 
+            counting_time = pygame.time.get_ticks() - start_time
+            # change milliseconds into seconds
+            counting_seconds = str( (counting_time%60000)/1000 ).zfill(2)
+            draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600)   
+            
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
             if exit_button_active.draw(screen):
                 main_menu = True
+                start_time = 0
             if restart_button_active.draw(screen):
                 world_data = []
                 world = reset_level(level)
