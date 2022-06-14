@@ -4,6 +4,7 @@ from os import path
 from pygame.locals import *
 import pickle
 import math
+import re
 #changelog: added wasd controls
 #add more levels
 #sound
@@ -1151,10 +1152,25 @@ while run:
                             for i in scorelist:
                                 score.append(i)
                     except:
-                        score = []
+                        score = ["0m0.000s", "0m0.000s", "0m0.000s"]
                         
-                    score1 = counting_string + "m" + counting_seconds + "s"
-                    score.append(score1)
+                    currentscore = counting_string + "m" + counting_seconds + "s"
+                    low_highscore = re.split('m|s', score[2])
+                    mid_highscore = re.split('m|s', score[1])
+                    high_highscore = re.split('m|s', score[0])
+                    currenttime = 60*float(counting_string) + float(counting_seconds)
+                    print(low_highscore)
+                    if (currenttime > (60*(float(low_highscore[0])) + float(low_highscore[1]))) and ((60*(float(low_highscore[0])) + float(low_highscore[1])) != 0):
+                        pass
+                    elif (currenttime > (60*(float(mid_highscore[0])) + float(mid_highscore[1]))) and ((60*(float(mid_highscore[0])) + float(mid_highscore[1])) != 0):
+                        score[2] = currentscore
+                    elif (currenttime > (60*(float(high_highscore[0])) + float(high_highscore[1]))) and ((60*(float(high_highscore[0])) + float(high_highscore[1])) != 0):
+                        score[2] = score[1]
+                        score[1] = currentscore 
+                    else:
+                        score[2] = score[1]
+                        score[1] = score[0]
+                        score[0] = currentscore
                     with open('score', 'wb') as file:
                         pickle.dump(score, file)
                     print(score)
