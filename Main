@@ -41,14 +41,17 @@ TILE_SIZE = SCREEN_HEIGHT // ROWS
 
 tutorial = False
 swap_range = False
-level = 0
-hook_list = [0, 3, 2, 2, 3]
-swap_list = [1, 0, 1, 2, 1]
+level = 5
+hook_list = [0, 3, 2, 2, 1, 1]
+swap_list = [1, 0, 1, 2, 0, 1]
+hidden_hook_list = [5]
+hidden_swap_list = [0]
 swap_count = 1
 hook_count = 0
 game_over = 0
 current_tile = -1
-max_levels = 4
+max_levels = 5
+max_hidden = 100
 facing = 1 #right
 player_movement = True
 main_menu = True
@@ -67,7 +70,7 @@ won_tile = []
 yet_1 = False
 yet_2 = False
 count = 0
-
+hidden = False
 
 #colours
 GREEN = (144, 201, 120)
@@ -109,7 +112,7 @@ swap_rect.y = 500
 broke_rect = broke_img.get_rect()
 broke_rect.x = 370
 broke_rect.y = 115
-won_tile.append(broke_rect)
+
 
 
 #scale rect size for exit and restart img
@@ -487,7 +490,7 @@ class Player():
         self.reset(x, y)
 
     def update(self, game_over):
-        global facing, sprite_x_r, sprite_x_l, sprite_y, sprite_x_c
+        global facing, sprite_x_r, sprite_x_l, sprite_y, sprite_x_c, hidden
         dx = 0
         dy = 0
         walk_cooldown = 5
@@ -631,7 +634,11 @@ class Player():
                     if self.vel_y >= 0 and tile.top - self.rect.bottom > -46:
                         dy = tile.top - self.rect.bottom
                         self.vel_y = 0
-                        self.in_air = False            
+                        self.in_air = False  
+            if broke_rect.colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
+                if not hidden: 
+                    hidden = True
+                
         
         
         
@@ -966,16 +973,24 @@ while run:
                 main_menu = True
                 world_data = []
                 world = reset_level(level)  
-                hook_count = hook_list[level]
-                swap_count = swap_list[level]                    
+                if hidden:
+                    hook_count = hidden_hook_list[level-100]
+                    swap_count = hidden_swap_list[level-100]     
+                else:
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                    
             if restart_button_active.draw(screen):
                 click_sound.play()
                 world_data = []
                 world = reset_level(level)
                 game_over = 0   
                 draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
-                hook_count = hook_list[level]
-                swap_count = swap_list[level]            
+                if hidden:
+                    hook_count = hidden_hook_list[level-100]
+                    swap_count = hidden_swap_list[level-100]     
+                else:
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                
                 draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
                 draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)                
             #update score
@@ -1086,9 +1101,13 @@ while run:
                         world_data[sprite_y][tile_check] = -1
                         world_data[sprite_y][tile_check + 1] = hooked_tile
                         hook_count -= 1
-                        playsound('sounds/grab.wav')
+                        hook_sound.play()
                         break
                 get_hooked_l = False
+                swamp_group.empty()
+                hook_group.empty()
+                swap_group.empty()                  
+                world = World(world_data)                
                 world = World(world_data)  
             
             elif get_hooked_u == True:
@@ -1100,10 +1119,13 @@ while run:
                         world_data[tile_check][sprite_x_c] = -1
                         world_data[tile_check + 1][sprite_x_c] = hooked_tile
                         hook_count -= 1
-                        playsound('sounds/grab.wav')
+                        hook_sound.play()
                         break
                 get_hooked_u = False
-                
+                swamp_group.empty()
+                hook_group.empty()
+                swap_group.empty()                  
+                world = World(world_data)                
                 world = World(world_data)             
             
             swap_button.draw(screen)            
@@ -1132,22 +1154,34 @@ while run:
                 main_menu = True
                 world_data = []
                 world = reset_level(level)  
-                hook_count = hook_list[level]
-                swap_count = swap_list[level]                    
+                if hidden:
+                    hook_count = hidden_hook_list[level-100]
+                    swap_count = hidden_swap_list[level-100]     
+                else:
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                       
             if restart_button_active.draw(screen):
                 click_sound.play()
                 world_data = []
                 world = reset_level(level)
                 game_over = 0   
                 draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
-                hook_count = hook_list[level]
-                swap_count = swap_list[level]            
+                if hidden:
+                    hook_count = hidden_hook_list[level-100]
+                    swap_count = hidden_swap_list[level-100]     
+                else:
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]               
                 draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
                 draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)                  
             draw_text(counting_string + "m" + counting_seconds + "s", font_score, RED, SCREEN_WIDTH+75, 600)   
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
-            hook_count = hook_list[level]
-            swap_count = swap_list[level]            
+            if hidden:
+                    hook_count = hidden_hook_list[level-100]
+                    swap_count = hidden_swap_list[level-100]     
+            else:
+                hook_count = hook_list[level]
+                swap_count = swap_list[level]                
             draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)
             if restart_button.draw(screen):
@@ -1160,16 +1194,15 @@ while run:
         if game_over == 1:
         #reset game and go to next level
             level += 1           
-            if level <= max_levels:
+            if level <= max_levels and hidden == False:
                 #reset level
                 world_data = []
                 world = reset_level(level)
                 game_over = 0
                 hook_count = hook_list[level]
                 swap_count = swap_list[level]                 
-            else:
+            elif hidden == False:
                 #draws you win background and keeps player updating
-                
                 screen.blit(win_back_img, (0, 0))
                 screen.blit(trophy_img, (700, 150))
                 screen.blit(trophy_img, (790, 500))
@@ -1186,36 +1219,68 @@ while run:
                 if high_score:
                     score_position = ""
                     player.reset(60, 65)
-                    try:
-                        with open('score', 'rb') as file:
-                            scorelist = (pickle.load(file))
-                            for i in scorelist:
-                                score.append(i)
-                    except:
-                        score = ["0m0.000s", "0m0.000s", "0m0.000s"]
-                        
-                    currentscore = counting_string + "m" + counting_seconds + "s"
-                    low_highscore = re.split('m|s', score[2])
-                    mid_highscore = re.split('m|s', score[1])
-                    high_highscore = re.split('m|s', score[0])
-                    currenttime = 60*float(counting_string) + float(counting_seconds)
-                    if (currenttime > (60*(float(low_highscore[0])) + float(low_highscore[1]))) and ((60*(float(low_highscore[0])) + float(low_highscore[1])) != 0):
-                        pass
-                    elif (currenttime > (60*(float(mid_highscore[0])) + float(mid_highscore[1]))) and ((60*(float(mid_highscore[0])) + float(mid_highscore[1])) != 0):
-                        score[2] = currentscore
-                        score_position = "3"
-                    elif (currenttime > (60*(float(high_highscore[0])) + float(high_highscore[1]))) and ((60*(float(high_highscore[0])) + float(high_highscore[1])) != 0):
-                        score[2] = score[1]
-                        score[1] = currentscore 
-                        score_position = "2"
+                    if level >= 100:
+                        try:
+                            with open('score_unlocked', 'rb') as file:
+                                scorelist = (pickle.load(file))
+                                for i in scorelist:
+                                    score.append(i)
+                        except:
+                            score = ["0m0.000s", "0m0.000s", "0m0.000s"]
+                            
+                        currentscore = counting_string + "m" + counting_seconds + "s"
+                        low_highscore = re.split('m|s', score[2])
+                        mid_highscore = re.split('m|s', score[1])
+                        high_highscore = re.split('m|s', score[0])
+                        currenttime = 60*float(counting_string) + float(counting_seconds)
+                        if (currenttime > (60*(float(low_highscore[0])) + float(low_highscore[1]))) and ((60*(float(low_highscore[0])) + float(low_highscore[1])) != 0):
+                            pass
+                        elif (currenttime > (60*(float(mid_highscore[0])) + float(mid_highscore[1]))) and ((60*(float(mid_highscore[0])) + float(mid_highscore[1])) != 0):
+                            score[2] = currentscore
+                            score_position = "3"
+                        elif (currenttime > (60*(float(high_highscore[0])) + float(high_highscore[1]))) and ((60*(float(high_highscore[0])) + float(high_highscore[1])) != 0):
+                            score[2] = score[1]
+                            score[1] = currentscore 
+                            score_position = "2"
+                        else:
+                            score[2] = score[1]
+                            score[1] = score[0]
+                            score[0] = currentscore
+                            score_position = "1"
+                        with open('score_unlocked', 'wb') as file:
+                            pickle.dump(score, file)
+                        high_score = False
                     else:
-                        score[2] = score[1]
-                        score[1] = score[0]
-                        score[0] = currentscore
-                        score_position = "1"
-                    with open('score', 'wb') as file:
-                        pickle.dump(score, file)
-                    high_score = False
+                        try:
+                            with open('score', 'rb') as file:
+                                scorelist = (pickle.load(file))
+                                for i in scorelist:
+                                    score.append(i)
+                        except:
+                            score = ["0m0.000s", "0m0.000s", "0m0.000s"]
+                            
+                        currentscore = counting_string + "m" + counting_seconds + "s"
+                        low_highscore = re.split('m|s', score[2])
+                        mid_highscore = re.split('m|s', score[1])
+                        high_highscore = re.split('m|s', score[0])
+                        currenttime = 60*float(counting_string) + float(counting_seconds)
+                        if (currenttime > (60*(float(low_highscore[0])) + float(low_highscore[1]))) and ((60*(float(low_highscore[0])) + float(low_highscore[1])) != 0):
+                            pass
+                        elif (currenttime > (60*(float(mid_highscore[0])) + float(mid_highscore[1]))) and ((60*(float(mid_highscore[0])) + float(mid_highscore[1])) != 0):
+                            score[2] = currentscore
+                            score_position = "3"
+                        elif (currenttime > (60*(float(high_highscore[0])) + float(high_highscore[1]))) and ((60*(float(high_highscore[0])) + float(high_highscore[1])) != 0):
+                            score[2] = score[1]
+                            score[1] = currentscore 
+                            score_position = "2"
+                        else:
+                            score[2] = score[1]
+                            score[1] = score[0]
+                            score[0] = currentscore
+                            score_position = "1"
+                        with open('score', 'wb') as file:
+                            pickle.dump(score, file)
+                        high_score = False
                 draw_text("TOP TIMES", font_level, RED, 30, 250)
                 draw_text("1.", font_sub, WHITE, 15, 350)
                 draw_text(score[0], font_score, VIOLET, 100, 345)
@@ -1237,6 +1302,7 @@ while run:
                     swap_count = swap_list[level]                       
                     main_menu = True   
                     high_score = True
+                    hidden = False
                 if restart_button_end.draw(screen):
                     click_sound.play()
                     level = 0
@@ -1245,9 +1311,24 @@ while run:
                     world = reset_level(level)
                     game_over = 0
                     high_score = True
+                    hidden = False
                     hook_count = hook_list[level]
                     swap_count = swap_list[level]                  
                     
+            if hidden == True:
+                if level < 100:
+                    level = 100
+                    high_score = True
+                if level <= max_hidden:
+                    #reset level
+                    world_data = []
+                    world = reset_level(level)
+                    game_over = 0
+                    hook_count = hidden_hook_list[level-100]
+                    swap_count = hidden_swap_list[level-100]
+                else:
+                    hidden = False
+                
                 
             
             
