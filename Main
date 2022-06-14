@@ -5,10 +5,7 @@ from pygame.locals import *
 import pickle
 import math
 import re
-#changelog: added wasd controls
 #add more levels
-#sound
-#better win (maybe sandbox level walk into UI?)
 pygame.init()
 
 clock = pygame.time.Clock()
@@ -45,7 +42,7 @@ TILE_SIZE = SCREEN_HEIGHT // ROWS
 tutorial = False
 swap_range = False
 level = 0
-hook_list = [3, 3, 2, 2, 3]
+hook_list = [0, 3, 2, 2, 3]
 swap_list = [1, 0, 1, 2, 1]
 swap_count = 1
 hook_count = 0
@@ -151,8 +148,17 @@ won_tile.append(restart_rect)
 highscore_rect = pygame.Rect((0, SCREEN_HEIGHT - 450), (370, 450))
 won_tile.append(highscore_rect)
 
+#load sounds
+swap_sound = pygame.mixer.Sound('sounds/swap.wav')
+hook_sound = pygame.mixer.Sound('sounds/grab.wav')
+click_sound = pygame.mixer.Sound('sounds/click.wav')
+jump_sound = pygame.mixer.Sound('sounds/jump.wav')
+pick_sound = pygame.mixer.Sound('sounds/pickup.wav')
+select_sound = pygame.mixer.Sound('sounds/select.wav')
 
-
+music = pygame.mixer.music.load('sounds/bgmusic.mp3')
+pygame.mixer.music.play(-1)
+pygame.mixer.music.set_volume(0.2)
 
 #draw grid
 def draw_grid():
@@ -492,9 +498,11 @@ class Player():
             if key[pygame.K_SPACE]and self.jumped == False and self.in_air == False and player_movement == True: 
                 self.vel_y = -10
                 self.jumped = True
+                jump_sound.play()
             if key[pygame.K_UP]and self.jumped == False and self.in_air == False and player_movement == True: 
                 self.vel_y = -10
                 self.jumped = True
+                jump_sound.play()
             if key[pygame.K_SPACE] == False:
                 self.jumped = False
             if key[pygame.K_UP] == False:
@@ -583,8 +591,10 @@ class Player():
             key = pygame.key.get_pressed()
             if key[pygame.K_SPACE]: 
                 self.vel_y = -10
+                jump_sound.play()
             if key[pygame.K_UP]: 
                 self.vel_y = -10
+                jump_sound.play()
             if key[pygame.K_LEFT] and player_movement == True or key[pygame.K_a]:
                 dx -= 3
                 self.counter += 1
@@ -771,6 +781,7 @@ while run:
                 get_hooked_u = True
                 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and swap_range == True and allow_swap == True:
+            swap_sound.play()
             if yet_1 == False:
                 used_x = x
                 used_y = y
@@ -903,15 +914,19 @@ while run:
             
     if main_menu == True:
         if exit_button.draw(screen):
+            click_sound.play()
             run = False
         if start_button.draw(screen):
+            click_sound.play()
             main_menu = False
         if tutorial_button.draw(screen):
             main_menu = False
+            click_sound.play()
             tutorial = True
     elif tutorial == True:
         screen.blit(tut_img, (0, 0))
         if back_button.draw(screen):
+            click_sound.play()
             main_menu = True
             tutorial = False
     else:   
@@ -946,6 +961,7 @@ while run:
             
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
             if exit_button_active.draw(screen):
+                click_sound.play()
                 pause_start_time = pygame.time.get_ticks()
                 main_menu = True
                 world_data = []
@@ -953,6 +969,7 @@ while run:
                 hook_count = hook_list[level]
                 swap_count = swap_list[level]                    
             if restart_button_active.draw(screen):
+                click_sound.play()
                 world_data = []
                 world = reset_level(level)
                 game_over = 0   
@@ -969,7 +986,8 @@ while run:
                     swap_colx = swap.rect.x
                     swap_coly = swap.rect.y
                     world_data[swap_coly // TILE_SIZE][swap_colx // TILE_SIZE] = -1                
-                swap_count += 1         
+                swap_count += 1 
+                pick_sound.play()
             draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390) 
             collide_hook = pygame.sprite.spritecollide(player, hook_group, True)
             if collide_hook:          
@@ -978,9 +996,11 @@ while run:
                     hook_coly = hook.rect.y
                     world_data[hook_coly // TILE_SIZE][hook_colx // TILE_SIZE] = -1
                 hook_count += 1   
+                pick_sound.play()
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)
             
             if swap_button.draw(screen) and swap_count > 0:
+                select_sound.play()
                 allow_swap = not allow_swap
                 yet_1 = False
                 yet_2 = False 
@@ -1029,11 +1049,15 @@ while run:
                     swap_group.empty()                    
                     world = World(world_data) 
             #if using hook
-            if hook_button.draw(screen):               
+            if hook_button.draw(screen) and hook_count > 0: 
+                select_sound.play()
                 allow_hook = not allow_hook
                 
-            if allow_hook:
+            if allow_hook and hook_count > 0:
                 pygame.draw.rect(screen, RED, hook_rect, 3)
+            else:
+                allow_hook = False
+                
                             
                 
             if get_hooked_r == True:
@@ -1045,6 +1069,7 @@ while run:
                         world_data[sprite_y][tile_check] = -1
                         world_data[sprite_y][tile_check - 1] = hooked_tile
                         hook_count -= 1
+                        hook_sound.play()
                         break
                 get_hooked_r = False
                 swamp_group.empty()
@@ -1061,6 +1086,7 @@ while run:
                         world_data[sprite_y][tile_check] = -1
                         world_data[sprite_y][tile_check + 1] = hooked_tile
                         hook_count -= 1
+                        playsound('sounds/grab.wav')
                         break
                 get_hooked_l = False
                 world = World(world_data)  
@@ -1074,6 +1100,7 @@ while run:
                         world_data[tile_check][sprite_x_c] = -1
                         world_data[tile_check + 1][sprite_x_c] = hooked_tile
                         hook_count -= 1
+                        playsound('sounds/grab.wav')
                         break
                 get_hooked_u = False
                 
@@ -1100,6 +1127,7 @@ while run:
             counting_seconds = str( (counting_time%60000)/1000 ).zfill(3)
             counting_string = "{:.0f}".format(counting_minutes)            
             if exit_button_active.draw(screen):
+                click_sound.play()
                 pause_start_time = pygame.time.get_ticks()
                 main_menu = True
                 world_data = []
@@ -1107,6 +1135,7 @@ while run:
                 hook_count = hook_list[level]
                 swap_count = swap_list[level]                    
             if restart_button_active.draw(screen):
+                click_sound.play()
                 world_data = []
                 world = reset_level(level)
                 game_over = 0   
@@ -1122,6 +1151,7 @@ while run:
             draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
             draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)
             if restart_button.draw(screen):
+                click_sound.play()
                 world_data = []
                 world = reset_level(level)
                 game_over = 0
@@ -1151,24 +1181,7 @@ while run:
                 pygame.draw.rect(screen, WHITE, highscore_rect, 1)
                 game_over = player.update(game_over)
                 screen.blit(broke_img, (370,115))
-                if exit_button_end.draw(screen):
-                    level = 0
-                    start_time = 0
-                    world_data = []
-                    world = reset_level(level)
-                    game_over = 0
-                    hook_count = hook_list[level]
-                    swap_count = swap_list[level]                       
-                    main_menu = True   
-                if restart_button_end.draw(screen):
-                    level = 0
-                    start_time = 0
-                    world_data = []
-                    world = reset_level(level)
-                    game_over = 0
-                    high_score = True
-                    hook_count = hook_list[level]
-                    swap_count = swap_list[level]      
+                    
                 #if first time, write high score
                 if high_score:
                     score_position = ""
@@ -1213,9 +1226,28 @@ while run:
                 pygame.draw.line(screen, WHITE, (0, 550), (370, 550))
                 draw_text(score_position, font_sub, RED, 15, 575)
                 draw_text(currentscore, font_score, VIOLET, 100, 570)
+                if exit_button_end.draw(screen):
+                    click_sound.play()
+                    level = 0
+                    start_time = 0
+                    world_data = []
+                    world = reset_level(level)
+                    game_over = 0
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                       
+                    main_menu = True   
+                    high_score = True
+                if restart_button_end.draw(screen):
+                    click_sound.play()
+                    level = 0
+                    start_time = 0
+                    world_data = []
+                    world = reset_level(level)
+                    game_over = 0
+                    high_score = True
+                    hook_count = hook_list[level]
+                    swap_count = swap_list[level]                  
                     
-
-
                 
             
             
