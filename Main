@@ -3,6 +3,7 @@ import button
 from os import path
 from pygame.locals import *
 import pickle
+import math
 #changelog: added wasd controls
 #add more levels
 #sound
@@ -14,10 +15,10 @@ FPS = 60
 #timer
 start_time = 0
 pause_start_time = 0
-
+high_score = True
 SCREEN_WIDTH = 840
 SCREEN_HEIGHT = 660
-
+score = []
 SIDE_MARGIN = 300
 
 
@@ -133,7 +134,7 @@ trophy_rect_5.x, trophy_rect_5.y = 550, 600
 trophy_rect_6 = trophy_rect.copy()
 trophy_rect_6.x, trophy_rect_6.y = 1000, 40
 trophy_rect_7 = trophy_rect.copy()
-trophy_rect_7.x, trophy_rect_7.y = 1100, 100
+trophy_rect_7.x, trophy_rect_7.y = 50, 100
 
 won_tile.append(trophy_rect)
 won_tile.append(trophy_rect_2)
@@ -149,7 +150,8 @@ restart_rect.x = SCREEN_WIDTH + 300 - restart_rect.w
 restart_rect.y = SCREEN_HEIGHT - restart_rect.h - exit_rect.h
 won_tile.append(restart_rect)
 
-
+highscore_rect = pygame.Rect((0, SCREEN_HEIGHT - 200), (500, 200))
+won_tile.append(highscore_rect)
 
 
 
@@ -937,9 +939,12 @@ while run:
                 start_time += (pause_end_time - pause_start_time)
                 pause_start_time = 0
             counting_time = pygame.time.get_ticks() - start_time
-            # change milliseconds into seconds
-            counting_seconds = str( (counting_time%60000)/1000 ).zfill(2)
-            draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600)   
+            # change milliseconds into seconds #fix pls
+            counting_minutes = math.floor(counting_time/60000)
+            counting_seconds = str( (counting_time%60000)/1000 ).zfill(3)
+            counting_string = "{:.0f}".format(counting_minutes)
+            draw_text(counting_string + "m" + counting_seconds + "s", font_score, RED, SCREEN_WIDTH+75, 600)   
+            
             
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
             if exit_button_active.draw(screen):
@@ -1118,6 +1123,7 @@ while run:
                 screen.blit(trophy_img, (1000, 40))
                 screen.blit(trophy_img, (50, 100))  
                 screen.blit(key_img, (SCREEN_WIDTH/2, SCREEN_HEIGHT/2 - 100))
+                pygame.draw.rect(screen, WHITE, highscore_rect, 1)
                 game_over = player.update(game_over)
                 screen.blit(broke_img, (370,115))
                 if exit_button_end.draw(screen):
@@ -1136,9 +1142,27 @@ while run:
                     world = reset_level(level)
                     game_over = 0
                     hook_count = hook_list[level]
-                    swap_count = swap_list[level]                   
+                    swap_count = swap_list[level]      
+                #if first time, write high score
+                if high_score:
+                    try:
+                        with open('score', 'rb') as file:
+                            scorelist = (pickle.load(file))
+                            for i in scorelist:
+                                score.append(i)
+                    except:
+                        score = []
+                        
+                    score1 = counting_string + "m" + counting_seconds + "s"
+                    score.append(score1)
+                    with open('score', 'wb') as file:
+                        pickle.dump(score, file)
+                    print(score)
+                    high_score = False
+                    
 
-                #draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600) 
+
+                draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600) 
             
             
     
