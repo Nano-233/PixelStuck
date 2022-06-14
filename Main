@@ -45,7 +45,7 @@ TILE_SIZE = SCREEN_HEIGHT // ROWS
 tutorial = False
 swap_range = False
 level = 0
-hook_list = [0, 3, 2, 2, 3]
+hook_list = [3, 3, 2, 2, 3]
 swap_list = [1, 0, 1, 2, 1]
 swap_count = 1
 hook_count = 0
@@ -1037,7 +1037,7 @@ while run:
                             
                 
             if get_hooked_r == True:
-                for tile_check in range (sprite_x_r, 12):
+                for tile_check in range (sprite_x_r, 13):
                     if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
                         if world_data[sprite_y][tile_check - 1] == 4 or world_data[sprite_y][tile_check - 1] == 3:
                             break
@@ -1089,6 +1089,33 @@ while run:
         
         game_over = player.update(game_over)
         if game_over == -1:
+            hook_button.draw(screen)
+            swap_button.draw(screen)
+            if pause_end_time > pause_start_time and pause_start_time > 0:
+                start_time += (pause_end_time - pause_start_time)
+                pause_start_time = 0
+            counting_time = pygame.time.get_ticks() - start_time
+            # change milliseconds into seconds #fix pls
+            counting_minutes = math.floor(counting_time/60000)
+            counting_seconds = str( (counting_time%60000)/1000 ).zfill(3)
+            counting_string = "{:.0f}".format(counting_minutes)            
+            if exit_button_active.draw(screen):
+                pause_start_time = pygame.time.get_ticks()
+                main_menu = True
+                world_data = []
+                world = reset_level(level)  
+                hook_count = hook_list[level]
+                swap_count = swap_list[level]                    
+            if restart_button_active.draw(screen):
+                world_data = []
+                world = reset_level(level)
+                game_over = 0   
+                draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
+                hook_count = hook_list[level]
+                swap_count = swap_list[level]            
+                draw_text('X ' + str(swap_count), font_score, GREEN, SCREEN_WIDTH + 180, 390)
+                draw_text('X ' + str(hook_count), font_score, GREEN, SCREEN_WIDTH + 180, 265)                  
+            draw_text(counting_string + "m" + counting_seconds + "s", font_score, RED, SCREEN_WIDTH+75, 600)   
             draw_text(f'Level: {level}', font_level, RED, SCREEN_WIDTH + 60, 25)
             hook_count = hook_list[level]
             swap_count = swap_list[level]            
