@@ -44,7 +44,7 @@ TILE_SIZE = SCREEN_HEIGHT // ROWS
 
 tutorial = False
 swap_range = False
-level = 4
+level = 0
 hook_list = [0, 3, 2, 2, 3]
 swap_list = [1, 0, 1, 2, 1]
 swap_count = 1
@@ -127,9 +127,7 @@ trophy_rect.x, trophy_rect.y = 700, 150
 trophy_rect_2 = trophy_rect.copy()
 trophy_rect_2.x, trophy_rect_2.y = 790, 500
 trophy_rect_3 = trophy_rect.copy()
-trophy_rect_3.x, trophy_rect_3.y = 300, 340
-trophy_rect_4 = trophy_rect.copy()
-trophy_rect_4.x, trophy_rect_4.y = 330, 222
+trophy_rect_3.x, trophy_rect_3.y = 300, 240
 trophy_rect_5 = trophy_rect.copy()
 trophy_rect_5.x, trophy_rect_5.y = 550, 600
 trophy_rect_6 = trophy_rect.copy()
@@ -140,7 +138,6 @@ trophy_rect_7.x, trophy_rect_7.y = 50, 100
 won_tile.append(trophy_rect)
 won_tile.append(trophy_rect_2)
 won_tile.append(trophy_rect_3)
-won_tile.append(trophy_rect_4)
 won_tile.append(trophy_rect_5)
 won_tile.append(trophy_rect_6)
 won_tile.append(trophy_rect_7)
@@ -151,7 +148,7 @@ restart_rect.x = SCREEN_WIDTH + 300 - restart_rect.w
 restart_rect.y = SCREEN_HEIGHT - restart_rect.h - exit_rect.h
 won_tile.append(restart_rect)
 
-highscore_rect = pygame.Rect((0, SCREEN_HEIGHT - 200), (500, 200))
+highscore_rect = pygame.Rect((0, SCREEN_HEIGHT - 450), (370, 450))
 won_tile.append(highscore_rect)
 
 
@@ -1115,11 +1112,11 @@ while run:
                 swap_count = swap_list[level]                 
             else:
                 #draws you win background and keeps player updating
+                
                 screen.blit(win_back_img, (0, 0))
                 screen.blit(trophy_img, (700, 150))
                 screen.blit(trophy_img, (790, 500))
-                screen.blit(trophy_img, (300, 340))
-                screen.blit(trophy_img, (330, 222))
+                screen.blit(trophy_img, (300, 240))
                 screen.blit(trophy_img, (550, 600))
                 screen.blit(trophy_img, (1000, 40))
                 screen.blit(trophy_img, (50, 100))  
@@ -1142,10 +1139,13 @@ while run:
                     world_data = []
                     world = reset_level(level)
                     game_over = 0
+                    high_score = True
                     hook_count = hook_list[level]
                     swap_count = swap_list[level]      
                 #if first time, write high score
                 if high_score:
+                    score_position = ""
+                    player.reset(60, 65)
                     try:
                         with open('score', 'rb') as file:
                             scorelist = (pickle.load(file))
@@ -1159,26 +1159,37 @@ while run:
                     mid_highscore = re.split('m|s', score[1])
                     high_highscore = re.split('m|s', score[0])
                     currenttime = 60*float(counting_string) + float(counting_seconds)
-                    print(low_highscore)
                     if (currenttime > (60*(float(low_highscore[0])) + float(low_highscore[1]))) and ((60*(float(low_highscore[0])) + float(low_highscore[1])) != 0):
                         pass
                     elif (currenttime > (60*(float(mid_highscore[0])) + float(mid_highscore[1]))) and ((60*(float(mid_highscore[0])) + float(mid_highscore[1])) != 0):
                         score[2] = currentscore
+                        score_position = "3"
                     elif (currenttime > (60*(float(high_highscore[0])) + float(high_highscore[1]))) and ((60*(float(high_highscore[0])) + float(high_highscore[1])) != 0):
                         score[2] = score[1]
                         score[1] = currentscore 
+                        score_position = "2"
                     else:
                         score[2] = score[1]
                         score[1] = score[0]
                         score[0] = currentscore
+                        score_position = "1"
                     with open('score', 'wb') as file:
                         pickle.dump(score, file)
-                    print(score)
                     high_score = False
+                draw_text("TOP TIMES", font_level, RED, 30, 250)
+                draw_text("1.", font_sub, WHITE, 15, 350)
+                draw_text(score[0], font_score, VIOLET, 100, 345)
+                draw_text("2.", font_sub, WHITE, 15, 425)
+                draw_text(score[1], font_score, VIOLET, 100, 420)
+                draw_text("3.", font_sub, WHITE, 15, 500)
+                draw_text(score[2], font_score, VIOLET, 100, 495)
+                pygame.draw.line(screen, WHITE, (0, 550), (370, 550))
+                draw_text(score_position, font_sub, RED, 15, 575)
+                draw_text(currentscore, font_score, VIOLET, 100, 570)
                     
 
 
-                draw_text(counting_seconds + "s", font_score, RED, SCREEN_WIDTH+100, 600) 
+                
             
             
     
