@@ -44,14 +44,14 @@ swap_range = False
 level = 5
 hook_list = [0, 3, 2, 2, 1, 1]
 swap_list = [1, 0, 1, 2, 0, 1]
-hidden_hook_list = [5]
-hidden_swap_list = [0]
+hidden_hook_list = [5, 0]
+hidden_swap_list = [0, 1]
 swap_count = 1
 hook_count = 0
 game_over = 0
 current_tile = -1
 max_levels = 5
-max_hidden = 100
+max_hidden = 101
 facing = 1 #right
 player_movement = True
 main_menu = True
@@ -71,6 +71,7 @@ yet_1 = False
 yet_2 = False
 count = 0
 hidden = False
+topstand = False
 
 #colours
 GREEN = (144, 201, 120)
@@ -186,6 +187,8 @@ def draw_grid():
 
 
 def player_square(x, y):
+    sprite_rb_square = -1
+    sprite_lb_square = -1
     #mouse pos
     if y < 4:
         if x < 4:
@@ -225,6 +228,8 @@ def player_square(x, y):
             sprite_l_square = 3
         else:
             sprite_l_square = 4
+        if topstand:
+            sprite_lb_square = sprite_l_square+4
     elif sprite_y < 7:
         if sprite_x_l < 4:
             sprite_l_square = 5
@@ -234,6 +239,9 @@ def player_square(x, y):
             sprite_l_square = 7
         elif sprite_x_l < 14:
             sprite_l_square = 8
+        if topstand:
+            sprite_lb_square = sprite_l_square+4
+            
     elif sprite_y < 10:
         if sprite_x_l < 4:
             sprite_l_square = 9
@@ -243,6 +251,7 @@ def player_square(x, y):
             sprite_l_square = 11
         elif sprite_x_l < 14:
             sprite_l_square = 12 
+        
     #sprite pos r
     if sprite_y < 4:
         if sprite_x_r < 4:
@@ -253,6 +262,8 @@ def player_square(x, y):
             sprite_r_square = 3
         else:
             sprite_r_square = 4
+        if topstand:
+            sprite_rb_square = sprite_r_square+4
     elif sprite_y < 7:
         if sprite_x_r < 4:
             sprite_r_square = 5
@@ -262,6 +273,8 @@ def player_square(x, y):
             sprite_r_square = 7
         elif sprite_x_r < 14:
             sprite_r_square = 8
+        if topstand:
+            sprite_rb_square = sprite_r_square+4
     elif sprite_y < 10:
         if sprite_x_r < 4:
             sprite_r_square = 9
@@ -271,6 +284,7 @@ def player_square(x, y):
             sprite_r_square = 11
         elif sprite_x_r < 14:
             sprite_r_square = 12 
+        
     
     
     #check for flag
@@ -306,7 +320,7 @@ def player_square(x, y):
                         flag_square = 12   
                 
     #check if override
-    if mouse_square == sprite_l_square or mouse_square == sprite_r_square or mouse_square == flag_square:
+    if mouse_square == sprite_l_square or mouse_square == sprite_r_square or mouse_square == flag_square or mouse_square == sprite_rb_square or mouse_square == sprite_lb_square:
         return False
     else:
         return True
@@ -490,7 +504,7 @@ class Player():
         self.reset(x, y)
 
     def update(self, game_over):
-        global facing, sprite_x_r, sprite_x_l, sprite_y, sprite_x_c, hidden
+        global facing, sprite_x_r, sprite_x_l, sprite_y, sprite_x_c, hidden, topstand
         dx = 0
         dy = 0
         walk_cooldown = 5
@@ -669,6 +683,10 @@ class Player():
         sprite_x_l = self.rect.x  // TILE_SIZE
         sprite_x_c = (((self.rect.x + TILE_SIZE-16) + self.rect.x) // 2) // TILE_SIZE
         sprite_y = self.rect.y // TILE_SIZE
+        if self.rect.y == 370 or self.rect.y == 190:
+            topstand = True
+        else:
+            topstand = False
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
             dy = 0
@@ -1032,6 +1050,7 @@ while run:
                 player_movement = True
             if allow_swap:
                 pygame.draw.rect(screen, RED, swap_rect, 3) 
+                
             if allow_swap:
                 pos = pygame.mouse.get_pos()
                 x = (pos[0]) // TILE_SIZE
@@ -1219,6 +1238,7 @@ while run:
                 if high_score:
                     score_position = ""
                     player.reset(60, 65)
+                    score = []
                     if level >= 100:
                         try:
                             with open('score_unlocked', 'rb') as file:
