@@ -8,9 +8,9 @@ import re
 #add more levels
 pygame.init()
 
+#declare basic variables and constants. CAPS are constants
 clock = pygame.time.Clock()
 FPS = 60
-#timer
 start_time = 0
 pause_start_time = 0
 high_score = True
@@ -19,7 +19,7 @@ SCREEN_HEIGHT = 660
 score = []
 SIDE_MARGIN = 300
 
-
+#import images, declare screen
 screen = pygame.display.set_mode((SCREEN_WIDTH + SIDE_MARGIN, SCREEN_HEIGHT))
 pygame.display.set_caption('Pixel Stuck')
 icon_img = pygame.image.load('img/tile/9.png')
@@ -34,14 +34,15 @@ broke_img = pygame.transform.scale(broke_img, (57, 57))
 key_img = pygame.image.load('img/ui/key.jpg')
 pygame.display.set_icon(icon_img)
 
-
+#grid
 MAX_COLS = 14
 ROWS = 11
 TILE_SIZE = SCREEN_HEIGHT // ROWS
 
+#in game variables
 tutorial = False
 swap_range = False
-level = 5
+level = 0
 hook_list = [0, 3, 2, 2, 1, 1]
 swap_list = [1, 0, 1, 2, 0, 1]
 hidden_hook_list = [5, 0]
@@ -123,6 +124,7 @@ exit_rect.x = SCREEN_WIDTH + 300 - exit_rect.w
 exit_rect.y = SCREEN_HEIGHT - exit_rect.h
 won_tile.append(exit_rect)
 
+#declare img and rects for end screen
 trophy_rect = trophy_img.get_rect()
 trophy_rect.x, trophy_rect.y = 700, 150
 trophy_rect_2 = trophy_rect.copy()
@@ -160,14 +162,14 @@ jump_sound = pygame.mixer.Sound('sounds/jump.wav')
 pick_sound = pygame.mixer.Sound('sounds/pickup.wav')
 select_sound = pygame.mixer.Sound('sounds/select.wav')
 
-music = pygame.mixer.music.load('sounds/bgmusic.mp3')
-pygame.mixer.music.play(-1)
-pygame.mixer.music.set_volume(0.2)
+#music = pygame.mixer.music.load('sounds/bgmusic.mp3')
+#pygame.mixer.music.play(-1)
+#pygame.mixer.music.set_volume(0.2)
 
 #draw grid
 def draw_grid():
     THICK_COUNT = 2
-    #vertical
+    #vertical lines, 3x3 in red and small squares in white
     for c in range (MAX_COLS + 1):
         if THICK_COUNT == 3:
             pygame.draw.line(screen, RED, (c * TILE_SIZE, 0), (c * TILE_SIZE, SCREEN_HEIGHT), 3)
@@ -175,7 +177,7 @@ def draw_grid():
         else: 
             pygame.draw.line(screen, WHITE, (c * TILE_SIZE, 0), (c * TILE_SIZE, SCREEN_HEIGHT))
             THICK_COUNT += 1
-    #horizontal
+    #horizontal lines
     THICK_COUNT = 2
     for c in range (ROWS + 1):
         if THICK_COUNT == 3:
@@ -185,11 +187,11 @@ def draw_grid():
             pygame.draw.line(screen, WHITE, (0, c * TILE_SIZE), (SCREEN_WIDTH, c * TILE_SIZE)) 
             THICK_COUNT += 1
 
-
+#find the big square the player is in and the mouse
 def player_square(x, y):
     sprite_rb_square = -1
     sprite_lb_square = -1
-    #mouse pos
+    #find mouse pos
     if y < 4:
         if x < 4:
             mouse_square = 1
@@ -218,7 +220,7 @@ def player_square(x, y):
         elif x < 14:
             mouse_square = 12 
     
-    #sprite pos l
+    #sprite pos left hitbox
     if sprite_y < 4:
         if sprite_x_l < 4:
             sprite_l_square = 1
@@ -252,7 +254,7 @@ def player_square(x, y):
         elif sprite_x_l < 14:
             sprite_l_square = 12 
         
-    #sprite pos r
+    #sprite pos right hitbox
     if sprite_y < 4:
         if sprite_x_r < 4:
             sprite_r_square = 1
@@ -319,7 +321,7 @@ def player_square(x, y):
                     elif flag_x < 14:
                         flag_square = 12   
                 
-    #check if override
+    #check if overlap between mouse, sprite square and flag square
     if mouse_square == sprite_l_square or mouse_square == sprite_r_square or mouse_square == flag_square or mouse_square == sprite_rb_square or mouse_square == sprite_lb_square:
         return False
     else:
@@ -649,8 +651,17 @@ class Player():
                         dy = tile.top - self.rect.bottom
                         self.vel_y = 0
                         self.in_air = False  
+            if level <101:
+                if self.rect.x > 960:
+                    self.rect.x = 0
+                if self.rect.x < 0:
+                    self.rect.x = 960
+                if self.rect.y > SCREEN_HEIGHT:
+                    self.rect.y = 0
+                if self.rect.y < 0:
+                    self.rect.y = SCREEN_HEIGHT
             if broke_rect.colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
-                if not hidden: 
+                if not hidden and level < 101:  
                     hidden = True
                 
         
@@ -1096,7 +1107,7 @@ while run:
                 
             if get_hooked_r == True:
                 for tile_check in range (sprite_x_r, 13):
-                    if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
+                    if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 2 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
                         if world_data[sprite_y][tile_check - 1] == 4 or world_data[sprite_y][tile_check - 1] == 3:
                             break
                         hooked_tile = world_data[sprite_y][tile_check]
@@ -1113,7 +1124,7 @@ while run:
                 
             elif get_hooked_l == True:
                 for tile_check in range (sprite_x_l, 0, -1):
-                    if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
+                    if world_data[sprite_y][tile_check] != -1 and world_data[sprite_y][tile_check] != 2 and world_data[sprite_y][tile_check] != 3 and world_data[sprite_y][tile_check] != 4:
                         if world_data[sprite_y][tile_check + 1] == 4 or world_data[sprite_y][tile_check + 1] == 3:
                             break                        
                         hooked_tile = world_data[sprite_y][tile_check]
@@ -1131,7 +1142,7 @@ while run:
             
             elif get_hooked_u == True:
                 for tile_check in range (sprite_y - 1, 0, -1):
-                    if world_data[tile_check][sprite_x_c] != -1 and world_data[tile_check][sprite_x_c] != 3 and world_data[tile_check][sprite_x_c] != 4:
+                    if world_data[tile_check][sprite_x_c] != -1 and world_data[tile_check][sprite_x_c] != 2 and world_data[tile_check][sprite_x_c] != 3 and world_data[tile_check][sprite_x_c] != 4:
                         if world_data[tile_check + 1][sprite_x_c] == 4 or world_data[tile_check + 1][sprite_x_c] == 3:
                             break                           
                         hooked_tile = world_data[tile_check][sprite_x_c]
@@ -1212,7 +1223,8 @@ while run:
         
         if game_over == 1:
         #reset game and go to next level
-            level += 1           
+            if high_score:
+                level += 1           
             if level <= max_levels and hidden == False:
                 #reset level
                 world_data = []
@@ -1237,7 +1249,7 @@ while run:
                 #if first time, write high score
                 if high_score:
                     score_position = ""
-                    player.reset(60, 65)
+                    player.reset(609, SCREEN_HEIGHT - 100)
                     score = []
                     if level >= 100:
                         try:
